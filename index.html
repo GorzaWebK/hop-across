@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#7fd0f5" />
+    <title>Hop Across</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+
+      <div id="hud" class="hidden">
+        <div class="hud-left">
+          <div id="best">TOP 0</div>
+        </div>
+        <div id="score">0</div>
+        <div class="hud-right"></div>
+      </div>
+
+      <div id="start" class="overlay">
+        <h1 class="title"><span>HOP</span><span>ACROSS</span></h1>
+        <p class="prompt blink">Tap or press <kbd>Space</kbd> to play</p>
+        <p class="hint">Arrows / WASD to hop &middot; Swipe on mobile</p>
+      </div>
+
+      <div id="gameover" class="overlay hidden">
+        <div class="card">
+          <div class="label">SCORE</div>
+          <div id="final-score" class="big">0</div>
+          <div id="new-best" class="badge hidden">NEW BEST!</div>
+          <div class="label">BEST <span id="final-best">0</span></div>
+        </div>
+        <p class="prompt blink">Tap or press <kbd>Space</kbd> to retry</p>
+      </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
