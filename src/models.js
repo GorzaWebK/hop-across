@@ -113,3 +113,100 @@ export function truck(color) {
     box(0.3, 0.3, 0.12, -0.2, 0.15, -0.38, WHEEL),
   ]);
 }
+
+// ---------------------------------------------------------------- river
+
+const BARK = 0x8a5a33;
+const BARK_DARK = 0x6e4526;
+const WOOD = 0xd9a86c;
+
+export function log(len) {
+  return voxelMesh(`log:${len}`, () => {
+    const parts = [
+      box(len - 0.08, 0.34, 0.68, 0, 0.0, 0, BARK),
+      box(0.04, 0.28, 0.6, len / 2 - 0.04, 0.0, 0, WOOD),
+      box(0.04, 0.28, 0.6, -len / 2 + 0.04, 0.0, 0, WOOD),
+    ];
+    for (let i = 0; i < len; i++) {
+      parts.push(box(0.18, 0.36, 0.7, -len / 2 + 0.5 + i + (i % 2 ? 0.15 : -0.15), 0.0, 0, BARK_DARK));
+    }
+    return parts;
+  }, { cast: true, receive: true });
+}
+
+export function lilyPad() {
+  return voxelMesh('lily', () => [
+    box(0.78, 0.07, 0.62, 0, 0, 0.05, 0x3dae4a),
+    box(0.5, 0.07, 0.2, -0.14, 0, -0.32, 0x3dae4a),
+    box(0.36, 0.08, 0.36, 0.05, 0.005, 0.08, 0x52c55e),
+    box(0.12, 0.1, 0.12, 0.22, 0.08, 0.18, 0xff8fc2),
+  ], { cast: false, receive: true });
+}
+
+// ---------------------------------------------------------------- railway
+
+const RAIL = 0xc3cad3;
+const SLEEPER = 0x6b4a32;
+
+export function railTrack(topY) {
+  return voxelMesh('rail:track', () => {
+    const parts = [];
+    for (let x = -LANE_WIDTH / 2 + 0.5; x < LANE_WIDTH / 2; x += 0.75) {
+      parts.push(box(0.24, 0.05, 0.82, x, topY + 0.025, 0, SLEEPER));
+    }
+    parts.push(box(LANE_WIDTH, 0.08, 0.07, 0, topY + 0.09, -0.25, RAIL));
+    parts.push(box(LANE_WIDTH, 0.08, 0.07, 0, topY + 0.09, 0.25, RAIL));
+    return parts;
+  }, { cast: false, receive: true });
+}
+
+/** Signal post with an unlit lamp housing; the flashing lamp is a separate mesh. */
+export function signalPost() {
+  return voxelMesh('rail:post', () => [
+    box(0.3, 0.1, 0.3, 0, 0.05, 0, 0x50565f),
+    box(0.1, 1.3, 0.1, 0, 0.7, 0, 0x8d949c),
+    box(0.44, 0.26, 0.14, 0, 1.38, 0, 0x2a2d33),
+    box(0.46, 0.06, 0.06, 0, 1.0, 0.0, 0xf2f2f2),
+    box(0.06, 0.06, 0.06, -0.12, 1.0, 0.04, 0xe33b3b),
+    box(0.06, 0.06, 0.06, 0.12, 1.0, 0.04, 0xe33b3b),
+  ]);
+}
+
+const ENGINE = 0xe8483f;
+const CREAM = 0xfff1cf;
+const CARRIAGE = 0x4e7fd6;
+
+/** A whole train as ONE geometry: engine at the +X end, carriages behind. */
+export function train(carriages) {
+  const engineLen = 3;
+  const carLen = 2.7;
+  const gap = 0.16;
+  const len = engineLen + carriages * (carLen + gap);
+  const mesh = voxelMesh(`train:${carriages}`, () => {
+    const parts = [];
+    let x = len / 2 - engineLen / 2;
+    // engine
+    parts.push(box(engineLen, 1.0, 0.86, x, 0.62, 0, ENGINE));
+    parts.push(box(engineLen + 0.02, 0.14, 0.88, x, 0.5, 0, CREAM));
+    parts.push(box(1.0, 0.45, 0.8, x - 0.8, 1.32, 0, ENGINE));
+    parts.push(box(1.02, 0.2, 0.82, x - 0.8, 1.3, 0, 0xbfe6ff));
+    parts.push(box(0.2, 0.3, 0.2, x + 0.9, 1.25, 0, 0x30343b));
+    parts.push(box(0.05, 0.18, 0.5, x + engineLen / 2 + 0.01, 0.78, 0, 0xfff3a0));
+    parts.push(box(0.16, 0.16, 0.9, x + engineLen / 2 - 0.1, 0.15, 0, 0x30343b));
+    for (const wx of [-1, 0, 1]) {
+      parts.push(box(0.36, 0.26, 0.9, x + wx * 0.9, 0.13, 0, 0x22252b));
+    }
+    x -= engineLen / 2 + gap + carLen / 2;
+    for (let i = 0; i < carriages; i++) {
+      parts.push(box(carLen, 0.95, 0.86, x, 0.62, 0, CARRIAGE));
+      parts.push(box(carLen + 0.02, 0.22, 0.88, x, 0.86, 0, 0xcfe7ff));
+      for (let w = -1; w <= 1; w++) parts.push(box(0.36, 0.2, 0.9, x + w * 0.8, 0.87, 0, 0x2f5fa8));
+      parts.push(box(carLen - 0.1, 0.06, 0.82, x, 1.12, 0, 0x3b66b0));
+      parts.push(box(0.36, 0.26, 0.9, x - 0.85, 0.13, 0, 0x22252b));
+      parts.push(box(0.36, 0.26, 0.9, x + 0.85, 0.13, 0, 0x22252b));
+      x -= carLen + gap;
+    }
+    return parts;
+  });
+  return { mesh, len };
+}

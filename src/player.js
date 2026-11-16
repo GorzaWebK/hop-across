@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { HOP_TIME, HOP_HEIGHT, COLS_HALF, SURFACE, lerp } from './config.js';
 import { makeMesh } from './voxel.js';
 import { characterGeometry } from './characters.js';
+import { RiverLane } from './lanes.js';
 
 export const DIRS = {
   up: { dr: 1, dc: 0, rot: 0 },
@@ -45,6 +46,7 @@ export class Player {
     this.squash = 0;        // landing squash, decays to 0
     this.bump = 0;          // blocked-move wobble
     this.death = null;
+    this.attached = null;   // { lane, p, offset } while riding a log / pad
     this.root.visible = true;
     this.root.rotation.set(0, 0, 0);
     this.body.scale.set(1, 1, 1);
@@ -84,11 +86,15 @@ export class Player {
       toX = Math.round(toX);
       if (!this.world.canEnter(toRow, toX)) return this.blocked();
     }
+    // Hopping along/between logs keeps the drift of the log you jumped from.
+    const vx = this.attached && lane.type === 'river' && !this.attached.lane.pads
+      ? this.attached.lane.velocity : 0;
     this.hop = {
       t: 0,
       fromX: this.x, toX,
-      fromY: this.y, toY: lane.surface,
+      fromY: this.y, toY: lane.standY,
       fromRow: this.row, toRow,
+      vx,
     };
     this.detach();
     if (this.onHop) this.onHop(this);
@@ -99,8 +105,16 @@ export class Player {
     this.queued = null;
   }
 
-  // Riding support (logs) – filled in by the river step.
-  detach() {}
+  // ------------------------------------------------------------ riding
+
+  attach(lane, p) {
+    this.attached = { lane, p, offset: RiverLane.snapOffset(p, this.x) };
+    p.dip = 1;
+  }
+
+  detach() {
+    this.attached = null;
+  }
 
   update(dt) {
     if (this.death) {
@@ -114,6 +128,8 @@ export class Player {
     if (this.hop) {
       const h = this.hop;
       h.t += dt / HOP_TIME;
+      h.fromX += h.vx * dt;
+      h.toX += h.vx * dt;
       const p = Math.min(1, h.t);
       this.x = lerp(h.fromX, h.toX, p);
       this.y = lerp(h.fromY, h.toY, p) + Math.sin(Math.PI * p) * HOP_HEIGHT;
@@ -122,6 +138,11 @@ export class Player {
       this.body.scale.set(1 - 0.12 * s, 1 + 0.22 * s, 1 - 0.12 * s);
       if (p >= 1) this.land();
     } else {
+      if (this.attached) {
+        const a = this.attached;
+        this.x = a.p.x + a.offset;
+        this.y += (a.p.top - this.y) * Math.min(1, dt * 20);
+      }
       const sq = this.squash;
       const b = Math.sin(this.bump * Math.PI) * 0.12;
       this.body.scale.set(1 + 0.22 * sq + b, 1 - 0.3 * sq - b, 1 + 0.22 * sq + b);
@@ -138,6 +159,11 @@ export class Player {
     this.x = h.toX;
     this.y = h.toY;
     this.squash = 1;
+    const lane = this.world.getLane(this.row);
+    if (lane && lane.type === 'river') {
+      const p = lane.platformAt(this.x);
+      if (p) this.attach(lane, p);   // no platform = splash (the game checks)
+    }
     if (this.onLand) this.onLand(this);
     if (this.alive && this.queued) {
       const q = this.queued;
@@ -154,11 +180,11 @@ export class Player {
 
   // ------------------------------------------------------------ death
 
-  die(type) {
+  die(type, info = {}) {
     if (!this.alive) return;
     this.alive = false;
     this.queued = null;
-    this.death = { type, t: 0 };
+    this.death = { type, t: 0, vx: (info.dir || 1) * 9, vy: 7 };
     if (this.hop) {
       // freeze the hop where it is, settle on the ground of the current lane
       const lane = this.world.getLane(this.laneRow);
@@ -174,6 +200,19 @@ export class Player {
     if (d.type === 'squash') {
       const k = Math.min(1, d.t * 20);
       this.body.scale.set(1 + 0.45 * k, 1 - 0.88 * k, 1 + 0.45 * k);
+    } else if (d.type === 'splash') {
+      // sink below the surface, then vanish
+      this.y -= dt * 2.2;
+      this.body.rotation.z += dt * 3;
+      if (d.t > 0.45) this.root.visible = false;
+    } else if (d.type === 'fling') {
+      // knocked flying by a train
+      d.vy -= 30 * dt;
+      this.x += d.vx * dt;
+      this.y += d.vy * dt;
+      this.body.rotation.x += dt * 14;
+      this.body.rotation.z += dt * 9;
+      if (d.t > 1.2) this.root.visible = false;
     }
   }
 }

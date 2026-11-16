@@ -1,7 +1,7 @@
 // World: procedural lane generator + lane lifecycle (spawn ahead, recycle behind).
 
 import { AHEAD, BEHIND, COLS_HALF, difficulty, chance, randInt, shuffle } from './config.js';
-import { GrassLane, RoadLane } from './lanes.js';
+import { GrassLane, RoadLane, RiverLane, RailLane } from './lanes.js';
 
 const START_ROWS = 3;        // rows 0..3 are a safe meadow
 const WALL_ROW = -3;         // rows <= this are a solid hedge
@@ -71,6 +71,9 @@ export class World {
     const type = this.plan.shift();
     switch (type) {
       case 'road': return new RoadLane(row, d, prev);
+      case 'rail': return new RailLane(row, d);
+      case 'logs': return new RiverLane(row, d, prev);
+      case 'pads': return new RiverLane(row, d, prev, { pads: true, mustPad: this.padTargets(prev) });
       default: return new GrassLane(row, d, { protect: this.protectFrom(prev) });
     }
   }
@@ -82,7 +85,16 @@ export class World {
       const free = shuffle(prev.freeCols());
       return free.slice(0, 2);
     }
+    if (prev.type === 'river' && prev.pads) return prev.padCols;
     return [];
+  }
+
+  /** Columns a lily-pad lane should cover so it can be reached from `prev`. */
+  padTargets(prev) {
+    if (!prev) return [];
+    if (prev.type === 'grass') return prev.freeCols();
+    if (prev.type === 'river' && prev.pads) return prev.padCols;
+    return [];   // roads, rails and logs let the player line up freely
   }
 
   /** Queue the next cluster of lanes (a hazard group followed by a breather). */
@@ -94,7 +106,31 @@ export class World {
       for (let i = 0; i < breather; i++) this.plan.push('grass');
       return;
     }
-    const n = randInt(1, 2 + Math.round(d * 3));
-    for (let i = 0; i < n; i++) this.plan.push('road');
+    const weights = [
+      ['road', 0.5],
+      ['river', row >= 6 ? 0.3 : 0],
+      ['rail', row >= 12 ? 0.12 + d * 0.18 : 0],
+    ];
+    const type = weighted(weights);
+    if (type === 'road') {
+      const n = randInt(1, 2 + Math.round(d * 3));
+      for (let i = 0; i < n; i++) this.plan.push('road');
+    } else if (type === 'river') {
+      const n = randInt(1, 2 + Math.round(d));
+      for (let i = 0; i < n; i++) this.plan.push(chance(0.28 - d * 0.12) ? 'pads' : 'logs');
+    } else {
+      const n = randInt(1, 1 + Math.round(d * 2));
+      for (let i = 0; i < n; i++) this.plan.push('rail');
+    }
   }
+}
+
+function weighted(list) {
+  const total = list.reduce((a, [, w]) => a + w, 0);
+  let r = Math.random() * total;
+  for (const [k, w] of list) {
+    r -= w;
+    if (r <= 0) return k;
+  }
+  return list[0][0];
 }

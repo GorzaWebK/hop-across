@@ -1,7 +1,7 @@
 // Game bootstrap: renderer, state machine and main loop.
 
 import * as THREE from 'three';
-import { PLAYER_HALF } from './config.js';
+import { PLAYER_HALF, COLS_HALF } from './config.js';
 import { World } from './world.js';
 import { Player } from './player.js';
 import { CameraRig } from './camera.js';
@@ -115,10 +115,10 @@ class Game {
     }
   }
 
-  die(type) {
+  die(type, info) {
     if (this.state !== 'playing') return;
     this.state = 'dying';
-    this.player.die(type);
+    this.player.die(type, info);
     this.rig.addShake(1);
     this.dyingFor = 0;
   }
@@ -141,7 +141,16 @@ class Game {
     const p = this.player;
     const lane = this.world.getLane(p.laneRow);
     if (!lane) return;
-    if (lane.hitTest(p.x, PLAYER_HALF)) this.die('squash');
+    if (lane.type === 'river' && !p.hop) {
+      // landed in the water, or a log carried us off the edge
+      if (!p.attached || Math.abs(p.x) > COLS_HALF + 0.6) this.die('splash');
+      return;
+    }
+    const hit = lane.hitTest(p.x, PLAYER_HALF);
+    if (hit) {
+      if (lane.type === 'rail') this.die('fling', { dir: lane.dir });
+      else this.die('squash', { dir: lane.dir });
+    }
   }
 
   frame() {

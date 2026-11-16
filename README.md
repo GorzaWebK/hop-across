@@ -41,7 +41,8 @@ src/
   voxel.js       box-list -> merged, vertex-colored geometry (1 draw call per model, cached)
   models.js      world models: ground strips, trees, rocks, vehicles...
   characters.js  playable characters
-  lanes.js       lane types (grass, road...) with hazards + collision queries
+  lanes.js       lane types: grass, road, river (logs / lily pads), railway
+  events.js      tiny event bus (gameplay -> audio/effects)
   world.js       procedural lane generator, spawning ahead / recycling behind
   player.js      grid hopping, input queue, squash & stretch, death states
   camera.js      fixed isometric orthographic camera rig
