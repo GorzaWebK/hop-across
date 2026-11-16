@@ -6,6 +6,7 @@ const KEYMAP = {
   ArrowLeft: 'left', KeyA: 'left',
   ArrowRight: 'right', KeyD: 'right',
   Space: 'action', Enter: 'action',
+  Escape: 'back', KeyC: 'chars',
 };
 
 const SWIPE_PX = 24;
@@ -18,6 +19,11 @@ export function initInput(surface, onAction) {
   window.addEventListener('keydown', (e) => {
     const a = KEYMAP[e.code];
     if (!a) return;
+    // A clicked button keeps focus; drop it so Space/Enter drive the game
+    // instead of re-clicking that button (we preventDefault below).
+    if (a === 'action' && document.activeElement && document.activeElement.tagName === 'BUTTON') {
+      document.activeElement.blur();
+    }
     e.preventDefault();
     if (e.repeat) return;      // holding a key should not machine-gun hops
     onAction(a, 'key');

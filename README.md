@@ -25,6 +25,7 @@ npm run preview
 | Hop back      | ↓ / S            | Swipe down         |
 | Hop left/right| ← → / A D        | Swipe left / right |
 | Start / retry | Space / Enter    | Tap                |
+| Characters    | C (Esc to close) | "Characters" button|
 
 ## Why Vite instead of a CDN script tag?
 

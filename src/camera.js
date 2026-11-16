@@ -13,6 +13,8 @@ export class CameraRig {
     this.row = 0;          // the row the camera is centered on (never decreases)
     this.x = 0;
     this.shake = 0;
+    this.preview = false;   // character-select close-up
+    this.lookAhead = LOOK_AHEAD;
   }
 
   resize(w, h) {
@@ -43,6 +45,10 @@ export class CameraRig {
     this.apply(0);
   }
 
+  setPreview(on) {
+    this.preview = on;
+  }
+
   addShake(amount) {
     this.shake = Math.max(this.shake, amount);
   }
@@ -61,7 +67,17 @@ export class CameraRig {
   }
 
   apply(dt) {
-    this.focus.set(this.x, 0, -(this.row + LOOK_AHEAD));
+    // ease between the gameplay framing and the character-select close-up
+    const k = dt ? Math.min(1, dt * 8) : 1;
+    const zoomTarget = this.preview ? 2.4 : 1;
+    const aheadTarget = this.preview ? -1.1 : LOOK_AHEAD;
+    this.lookAhead += (aheadTarget - this.lookAhead) * k;
+    const c = this.camera;
+    if (Math.abs(c.zoom - zoomTarget) > 0.001) {
+      c.zoom += (zoomTarget - c.zoom) * k;
+      c.updateProjectionMatrix();
+    }
+    this.focus.set(this.x, 0.3, -(this.row + this.lookAhead));
     this.camera.position.copy(this.focus).add(OFFSET);
     if (this.shake > 0) {
       const s = this.shake * 0.35;

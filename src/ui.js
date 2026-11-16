@@ -14,7 +14,53 @@ export class UI {
     this.newBest = $('new-best');
     this.coins = $('coins');
     this.coinsText = this.coins.querySelector('span');
+    this.select = $('select');
+    this.selName = $('sel-name');
+    this.selBlurb = $('sel-blurb');
+    this.selCount = $('sel-count');
+    this.selGo = $('sel-go');
+    this.runCoins = $('run-coins');
     this.lastScore = -1;
+  }
+
+  /** Wire button callbacks: { openChars, prev, next, confirm, close } */
+  bind(h) {
+    document.querySelectorAll('.open-chars').forEach((b) => b.addEventListener('click', h.openChars));
+    $('sel-prev').addEventListener('click', h.prev);
+    $('sel-next').addEventListener('click', h.next);
+    this.selGo.addEventListener('click', h.confirm);
+    $('sel-close').addEventListener('click', h.close);
+  }
+
+  showSelect() {
+    this.start.classList.add('hidden');
+    this.gameover.classList.add('hidden');
+    this.score.classList.add('invisible');
+    this.select.classList.remove('hidden');
+  }
+
+  hideSelect() {
+    this.select.classList.add('hidden');
+  }
+
+  updateSelect(def, index, total, unlocked, selected, coins) {
+    this.selName.textContent = unlocked ? def.name : `${def.name} \u{1F512}`;
+    this.selBlurb.textContent = def.blurb;
+    this.selCount.textContent = `${index + 1} / ${total}`;
+    const go = this.selGo;
+    go.classList.remove('locked');
+    if (unlocked) {
+      go.textContent = selected ? 'PLAY' : 'SELECT';
+    } else {
+      go.textContent = `UNLOCK \u25C6 ${def.price}`;
+      if (coins < def.price) go.classList.add('locked');
+    }
+  }
+
+  denySelect() {
+    this.selGo.classList.remove('shake');
+    void this.selGo.offsetWidth;
+    this.selGo.classList.add('shake');
   }
 
   setCoins(n, bump = false) {
@@ -48,7 +94,8 @@ export class UI {
     this.score.classList.remove('invisible');
   }
 
-  showGameOver(score, best, isNewBest) {
+  showGameOver(score, best, isNewBest, runCoins = 0) {
+    this.runCoins.textContent = runCoins ? `+${runCoins} coin${runCoins > 1 ? 's' : ''}` : '';
     this.finalScore.textContent = score;
     this.finalBest.textContent = best;
     this.newBest.classList.toggle('hidden', !isNewBest);
