@@ -26,6 +26,7 @@ npm run preview
 | Hop left/right| ← → / A D        | Swipe left / right |
 | Start / retry | Space / Enter    | Tap                |
 | Characters    | C (Esc to close) | "Characters" button|
+| Mute          | M                | Speaker button     |
 
 ## Why Vite instead of a CDN script tag?
 
@@ -49,6 +50,17 @@ src/
   camera.js      fixed isometric orthographic camera rig (auto-scrolls forward)
   hunter.js      the sky hunter that snatches players who lag behind
   input.js       keyboard + touch (tap / swipe)
+  effects.js     particle puffs (one InstancedMesh = one draw call)
+  audio.js       Web Audio synthesised sound effects + mute
   ui.js          DOM HUD and screens
   storage.js     localStorage wrapped in try/catch
 ```
+
+## Performance notes
+
+- Every model is a single merged, vertex-coloured geometry sharing one material, cached and
+  reused, so a car or tree is one draw call and recycling lanes never uploads new buffers.
+- Lanes are generated ~22 rows ahead and removed ~9 rows behind the camera.
+- Particles are a single `InstancedMesh`.
+- If the frame rate stays under ~50 fps the game lowers the pixel ratio, and as a last
+  resort turns off shadows.

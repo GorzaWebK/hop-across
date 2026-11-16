@@ -27,6 +27,15 @@ html, body {
 
 #game { display: block; width: 100%; height: 100%; }
 
+#danger {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to top, rgba(255, 40, 40, 0.55), rgba(255, 40, 40, 0) 38%);
+  transition: opacity 0.15s linear;
+}
+
 .hidden { display: none !important; }
 .invisible { visibility: hidden; }
 
@@ -58,6 +67,24 @@ html, body {
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
   padding-top: 6px;
 }
+
+.icon-btn {
+  pointer-events: auto;
+  appearance: none;
+  border: 0;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(29, 36, 51, 0.45);
+  color: var(--paper);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.icon-btn .ico-off { display: none; }
+.icon-btn.muted .ico-on { display: none; }
+.icon-btn.muted .ico-off { display: block; }
 
 .hud-right {
   display: flex;

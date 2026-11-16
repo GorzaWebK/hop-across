@@ -6,7 +6,7 @@ const KEYMAP = {
   ArrowLeft: 'left', KeyA: 'left',
   ArrowRight: 'right', KeyD: 'right',
   Space: 'action', Enter: 'action',
-  Escape: 'back', KeyC: 'chars',
+  Escape: 'back', KeyC: 'chars', KeyM: 'mute',
 };
 
 const SWIPE_PX = 24;

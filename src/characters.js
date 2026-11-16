@@ -111,11 +111,11 @@ const orbit = () => {
 };
 
 export const CHARACTERS = [
-  { id: 'bolt', name: 'Bolt', blurb: 'A plucky delivery robot.', price: 0, parts: bolt },
-  { id: 'sprout', name: 'Sprout', blurb: 'A mushroom kid with a spotty cap.', price: 20, parts: sprout },
-  { id: 'nimbus', name: 'Nimbus', blurb: 'Half sheep, half cloud, all fluff.', price: 40, parts: nimbus },
-  { id: 'ember', name: 'Ember', blurb: 'A quick little fox with a bright tail.', price: 75, parts: ember },
-  { id: 'orbit', name: 'Orbit', blurb: 'Took a wrong turn at the moon.', price: 120, parts: orbit },
+  { id: 'bolt', name: 'Bolt', blurb: 'A plucky delivery robot.', price: 0, parts: bolt, palette: [0xcfd9e6, 0xeaf0f6, 0x3a4250, 0xff8a3d] },
+  { id: 'sprout', name: 'Sprout', blurb: 'A mushroom kid with a spotty cap.', price: 20, parts: sprout, palette: [0xe8433f, 0xf3e6c8, 0xfff6ea] },
+  { id: 'nimbus', name: 'Nimbus', blurb: 'Half sheep, half cloud, all fluff.', price: 40, parts: nimbus, palette: [0xf7f7fa, 0xf7f7fa, 0x2d2d35] },
+  { id: 'ember', name: 'Ember', blurb: 'A quick little fox with a bright tail.', price: 75, parts: ember, palette: [0xff8a3d, 0xff8a3d, 0xfff4e6, 0x3b2a20] },
+  { id: 'orbit', name: 'Orbit', blurb: 'Took a wrong turn at the moon.', price: 120, parts: orbit, palette: [0xf2f4f7, 0xb8c0cb, 0xffb84d] },
 ];
 
 export function characterById(id) {

@@ -27,6 +27,8 @@ export class Player {
     this.root.add(this.body);
     this.onLand = null;                     // (player) => void, set by the game
     this.onHop = null;
+    this.onBump = null;
+    this.idle = 0;
     this.reset();
   }
 
@@ -103,6 +105,7 @@ export class Player {
   blocked() {
     this.bump = 1;
     this.queued = null;
+    if (this.onBump) this.onBump(this);
   }
 
   // ------------------------------------------------------------ riding
@@ -145,7 +148,9 @@ export class Player {
       }
       const sq = this.squash;
       const b = Math.sin(this.bump * Math.PI) * 0.12;
-      this.body.scale.set(1 + 0.22 * sq + b, 1 - 0.3 * sq - b, 1 + 0.22 * sq + b);
+      this.idle += dt;
+      const breathe = Math.sin(this.idle * 3.2) * 0.025;   // gentle idle bob
+      this.body.scale.set(1 + 0.22 * sq + b - breathe * 0.5, 1 - 0.3 * sq - b + breathe, 1 + 0.22 * sq + b - breathe * 0.5);
     }
     this.squash = Math.max(0, this.squash - dt * 9);
     this.bump = Math.max(0, this.bump - dt * 6);

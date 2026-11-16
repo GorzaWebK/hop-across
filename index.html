@@ -10,6 +10,7 @@
   <body>
     <div id="app">
       <canvas id="game"></canvas>
+      <div id="danger"></div>
 
       <div id="hud">
         <div class="hud-left">
@@ -18,13 +19,17 @@
         <div id="score">0</div>
         <div class="hud-right">
           <div id="coins" class="coins"><i class="coin-icon"></i><span>0</span></div>
+          <button id="mute" class="icon-btn" aria-label="Toggle sound">
+            <svg class="ico-on" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+            <svg class="ico-off" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
         </div>
       </div>
 
       <div id="start" class="overlay">
         <h1 class="title"><span>HOP</span><span>ACROSS</span></h1>
         <p class="prompt blink">Tap or press <kbd>Space</kbd> to play</p>
-        <p class="hint">Arrows / WASD to hop &middot; Swipe on mobile</p>
+        <p class="hint">Arrows / WASD to hop &middot; Swipe on mobile &middot; M to mute</p>
         <button class="btn open-chars">Characters</button>
       </div>
 

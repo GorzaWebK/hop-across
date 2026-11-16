@@ -20,7 +20,21 @@ export class UI {
     this.selCount = $('sel-count');
     this.selGo = $('sel-go');
     this.runCoins = $('run-coins');
+    this.mute = $('mute');
+    this.danger = $('danger');
+    this.dangerLevel = -1;
     this.lastScore = -1;
+  }
+
+  setMuted(m) {
+    this.mute.classList.toggle('muted', m);
+  }
+
+  setDanger(k) {
+    const q = Math.round(k * 20) / 20;   // only touch the DOM when it visibly changes
+    if (q === this.dangerLevel) return;
+    this.dangerLevel = q;
+    this.danger.style.opacity = q;
   }
 
   /** Wire button callbacks: { openChars, prev, next, confirm, close } */
@@ -30,6 +44,7 @@ export class UI {
     $('sel-next').addEventListener('click', h.next);
     this.selGo.addEventListener('click', h.confirm);
     $('sel-close').addEventListener('click', h.close);
+    this.mute.addEventListener('click', (e) => { h.mute(); e.currentTarget.blur(); });
   }
 
   showSelect() {
