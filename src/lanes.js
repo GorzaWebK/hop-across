@@ -107,6 +107,11 @@ export class GrassLane extends Lane {
 
     for (const c of this.blocked) this.addObstacle(c);
 
+    // Columns reachable from the protected entry points by walking sideways
+    // (trees split a lane into segments). The next lane keeps some of these free.
+    const entries = (opts.protect || []).filter((c) => !this.blocked.has(c));
+    this.reachable = entries.length ? this.spread(entries) : this.freeCols();
+
     // Decorative scenery outside the playable area frames the board.
     for (let c = COLS_HALF + 1; c <= COLS_HALF + 8; c++) {
       for (const side of [-1, 1]) {
@@ -114,6 +119,18 @@ export class GrassLane extends Lane {
         if (chance(p)) this.addObstacle(side * c);
       }
     }
+  }
+
+  spread(entries) {
+    const seen = new Set();
+    const stack = [...entries];
+    while (stack.length) {
+      const c = stack.pop();
+      if (seen.has(c) || this.blocked.has(c) || Math.abs(c) > COLS_HALF) continue;
+      seen.add(c);
+      stack.push(c - 1, c + 1);
+    }
+    return [...seen];
   }
 
   addObstacle(col) {
@@ -215,6 +232,8 @@ export class RiverLane extends Lane {
         this.platforms.push({ x: c, len: 1, mesh, top: this.surface + 0.07, pad: true });
       }
       this.padCols = [...cols];
+      // pads you can actually arrive on from the lane behind
+      this.reachable = must.length ? this.padCols.filter((c) => must.includes(c)) : this.padCols;
       return;
     }
 

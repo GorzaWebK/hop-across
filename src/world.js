@@ -96,18 +96,18 @@ export class World {
   protectFrom(prev) {
     if (!prev) return [];
     if (prev.type === 'grass') {
-      const free = shuffle(prev.freeCols());
+      const free = shuffle([...prev.reachable]);
       return free.slice(0, 2);
     }
-    if (prev.type === 'river' && prev.pads) return prev.padCols;
+    if (prev.type === 'river' && prev.pads) return prev.reachable;
     return [];
   }
 
   /** Columns a lily-pad lane should cover so it can be reached from `prev`. */
   padTargets(prev) {
     if (!prev) return [];
-    if (prev.type === 'grass') return prev.freeCols();
-    if (prev.type === 'river' && prev.pads) return prev.padCols;
+    if (prev.type === 'grass') return prev.reachable;
+    if (prev.type === 'river' && prev.pads) return prev.reachable;
     return [];   // roads, rails and logs let the player line up freely
   }
 
