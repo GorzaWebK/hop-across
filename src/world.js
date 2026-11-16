@@ -1,6 +1,6 @@
 // World: procedural lane generator + lane lifecycle (spawn ahead, recycle behind).
 
-import { AHEAD, BEHIND, COLS_HALF, difficulty, chance, randInt, shuffle } from './config.js';
+import { AHEAD, BEHIND, COLS_HALF, difficulty, chance, randInt, shuffle, pick } from './config.js';
 import { GrassLane, RoadLane, RiverLane, RailLane } from './lanes.js';
 
 const START_ROWS = 3;        // rows 0..3 are a safe meadow
@@ -13,6 +13,7 @@ export class World {
     this.plan = [];
     this.nextRow = 0;
     this.lowestRow = 0;
+    this.time = 0;
   }
 
   reset() {
@@ -47,13 +48,18 @@ export class World {
       }
       this.lowestRow++;
     }
-    for (const lane of this.lanes.values()) lane.update(dt);
+    this.time += dt;
+    for (const lane of this.lanes.values()) {
+      lane.update(dt);
+      if (lane.coins.length) lane.updateCoins(dt, this.time);
+    }
   }
 
   ensure(upToRow) {
     while (this.nextRow <= upToRow) {
       const row = this.nextRow++;
       const lane = this.makeLane(row);
+      this.maybeAddCoin(lane);
       this.lanes.set(row, lane);
       this.scene.add(lane.group);
     }
@@ -76,6 +82,14 @@ export class World {
       case 'pads': return new RiverLane(row, d, prev, { pads: true, mustPad: this.padTargets(prev) });
       default: return new GrassLane(row, d, { protect: this.protectFrom(prev) });
     }
+  }
+
+  maybeAddCoin(lane) {
+    if (lane.row < 2) return;
+    const odds = { grass: 0.1, road: 0.16, river: 0.12, rail: 0.12 }[lane.type] || 0;
+    if (!chance(odds)) return;
+    const spots = lane.coinSpots().filter((s) => s.platform || Math.abs(s.x) <= COLS_HALF);
+    if (spots.length) lane.addCoin(pick(spots));
   }
 
   /** Columns a new grass lane must keep free so the path never dead-ends. */

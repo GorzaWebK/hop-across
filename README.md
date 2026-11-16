@@ -45,7 +45,8 @@ src/
   events.js      tiny event bus (gameplay -> audio/effects)
   world.js       procedural lane generator, spawning ahead / recycling behind
   player.js      grid hopping, input queue, squash & stretch, death states
-  camera.js      fixed isometric orthographic camera rig
+  camera.js      fixed isometric orthographic camera rig (auto-scrolls forward)
+  hunter.js      the sky hunter that snatches players who lag behind
   input.js       keyboard + touch (tap / swipe)
   ui.js          DOM HUD and screens
   storage.js     localStorage wrapped in try/catch

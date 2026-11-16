@@ -210,3 +210,51 @@ export function train(carriages) {
   });
   return { mesh, len };
 }
+
+// ---------------------------------------------------------------- pickups & hazards
+
+const GOLD = 0xffc93c;
+const GOLD_DARK = 0xe39b17;
+const GOLD_LIGHT = 0xfff0a8;
+
+export function coin() {
+  return voxelMesh('coin', () => [
+    box(0.42, 0.42, 0.1, 0, 0, 0, GOLD_DARK),
+    box(0.34, 0.5, 0.1, 0, 0, 0, GOLD_DARK),
+    box(0.5, 0.34, 0.1, 0, 0, 0, GOLD_DARK),
+    box(0.3, 0.3, 0.12, 0, 0, 0, GOLD),
+    box(0.08, 0.2, 0.14, 0, 0, 0, GOLD_LIGHT),
+  ]);
+}
+
+// The "sky hunter": an original voxel raptor that snatches dawdlers.
+const FEATHER = 0x5b3a29;
+const FEATHER_DARK = 0x40281c;
+const HEAD = 0xf4efe6;
+const BEAK = 0xffb000;
+
+export function hunterBody() {
+  return voxelMesh('hunter:body', () => [
+    box(0.9, 0.7, 1.6, 0, 0, 0, FEATHER),
+    box(0.8, 0.7, 0.7, 0, 0.2, -1.0, HEAD),
+    box(0.3, 0.25, 0.4, 0, 0.1, -1.5, BEAK),
+    box(0.3, 0.12, 0.2, 0, -0.06, -1.55, 0xd18a00),
+    box(0.12, 0.14, 0.06, -0.3, 0.32, -1.36, 0x1a1a1a),
+    box(0.12, 0.14, 0.06, 0.3, 0.32, -1.36, 0x1a1a1a),
+    box(0.84, 0.12, 0.3, 0, 0.5, -1.0, FEATHER_DARK),
+    box(1.0, 0.18, 0.9, 0, 0.0, 1.1, FEATHER_DARK),
+    box(0.16, 0.5, 0.16, -0.25, -0.55, -0.2, BEAK),
+    box(0.16, 0.5, 0.16, 0.25, -0.55, -0.2, BEAK),
+    box(0.3, 0.1, 0.36, -0.25, -0.8, -0.3, BEAK),
+    box(0.3, 0.1, 0.36, 0.25, -0.8, -0.3, BEAK),
+  ]);
+}
+
+/** One wing, pivot at the shoulder, extending toward +X. */
+export function hunterWing() {
+  return voxelMesh('hunter:wing', () => [
+    box(1.2, 0.14, 1.1, 0.6, 0, 0, FEATHER),
+    box(1.0, 0.12, 0.8, 1.7, 0, 0.1, FEATHER),
+    box(0.7, 0.1, 0.5, 2.5, 0, 0.2, FEATHER_DARK),
+  ]);
+}

@@ -12,7 +12,18 @@ export class UI {
     this.finalScore = $('final-score');
     this.finalBest = $('final-best');
     this.newBest = $('new-best');
+    this.coins = $('coins');
+    this.coinsText = this.coins.querySelector('span');
     this.lastScore = -1;
+  }
+
+  setCoins(n, bump = false) {
+    this.coinsText.textContent = n;
+    if (bump) {
+      this.coins.classList.remove('bump');
+      void this.coins.offsetWidth;  // restart the CSS animation
+      this.coins.classList.add('bump');
+    }
   }
 
   setScore(n) {
@@ -28,13 +39,13 @@ export class UI {
   showStart() {
     this.start.classList.remove('hidden');
     this.gameover.classList.add('hidden');
-    this.hud.classList.add('hidden');
+    this.score.classList.add('invisible');
   }
 
   showPlaying() {
     this.start.classList.add('hidden');
     this.gameover.classList.add('hidden');
-    this.hud.classList.remove('hidden');
+    this.score.classList.remove('invisible');
   }
 
   showGameOver(score, best, isNewBest) {

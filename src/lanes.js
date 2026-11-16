@@ -18,8 +18,62 @@ class Lane {
     this.group = new THREE.Group();
     this.group.position.z = -row;
     this.blocked = new Set();          // grid-blocked columns (trees, rocks)
+    this.coins = [];
   }
   update() {}
+
+  /** Places a coin could sit: { x } on the ground or { platform, offset } on a log/pad. */
+  coinSpots() {
+    return this.freeCols().map((x) => ({ x }));
+  }
+
+  addCoin(spot) {
+    const mesh = M.coin();
+    const c = { x: spot.x ?? 0, platform: spot.platform || null, offset: spot.offset || 0, mesh, taken: false, t: 0 };
+    this.positionCoin(c);
+    this.group.add(mesh);
+    this.coins.push(c);
+  }
+
+  positionCoin(c) {
+    if (c.platform) c.x = c.platform.x + c.offset;
+    const base = c.platform ? c.platform.top : this.standY;
+    c.mesh.position.set(c.x, base + 0.42, 0);
+  }
+
+  updateCoins(dt, time) {
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+      const c = this.coins[i];
+      this.positionCoin(c);
+      if (c.taken) {
+        // pop: rise, spin fast, shrink away
+        c.t += dt;
+        const k = c.t / 0.35;
+        c.mesh.position.y += k * 1.4;
+        c.mesh.rotation.y += dt * 30;
+        c.mesh.scale.setScalar(Math.max(0.01, 1 - k * k));
+        if (k >= 1) {
+          this.group.remove(c.mesh);
+          this.coins.splice(i, 1);
+        }
+      } else {
+        c.mesh.rotation.y = time * 3 + this.row;
+        c.mesh.position.y += Math.sin(time * 4 + this.row) * 0.06;
+      }
+    }
+  }
+
+  /** Take any coin within reach of x. Returns how many were collected. */
+  collectCoins(x) {
+    let n = 0;
+    for (const c of this.coins) {
+      if (!c.taken && Math.abs(c.x - x) < 0.5) {
+        c.taken = true;
+        n++;
+      }
+    }
+    return n;
+  }
   /** Return a hazard overlapping [x-half, x+half], or null. */
   hitTest() { return null; }
   isBlocked(col) { return this.blocked.has(col); }
@@ -188,6 +242,13 @@ export class RiverLane extends Lane {
 
   get velocity() { return this.dir * this.speed; }
 
+  coinSpots() {
+    return this.platforms.map((p) => ({
+      platform: p,
+      offset: p.len <= 1 ? 0 : Math.floor(Math.random() * p.len) - p.len / 2 + 0.5,
+    }));
+  }
+
   update(dt) {
     if (this.pads) return;
     this.time += dt;
@@ -300,6 +361,10 @@ export class RailLane extends Lane {
     this.lamps[0].visible = on;
     this.lamps[1].visible = !on;
     this.warnGlow.visible = on;
+  }
+
+  coinSpots() {
+    return playableCols().map((x) => ({ x }));
   }
 
   hitTest(x, half) {

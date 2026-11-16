@@ -1,7 +1,7 @@
 // Game bootstrap: renderer, state machine and main loop.
 
 import * as THREE from 'three';
-import { PLAYER_HALF, COLS_HALF } from './config.js';
+import { PLAYER_HALF, COLS_HALF, difficulty } from './config.js';
 import { World } from './world.js';
 import { Player } from './player.js';
 import { CameraRig } from './camera.js';
@@ -9,9 +9,12 @@ import { UI } from './ui.js';
 import { initInput } from './input.js';
 import { CHARACTERS } from './characters.js';
 import * as store from './storage.js';
+import { Hunter } from './hunter.js';
+import { on } from './events.js';
 
 const SKY = 0x7fd0f5;
 const LIGHT_OFFSET = new THREE.Vector3(-6, 14, 5);
+const HUNTER_DISTANCE = 4.2;   // rows behind the camera before the sky hunter strikes
 
 class Game {
   constructor() {
@@ -32,10 +35,14 @@ class Game {
     this.player.setCharacter(CHARACTERS[0]);
     this.player.onLand = () => this.onLand();
     this.scene.add(this.player.root);
+    this.hunter = new Hunter(this.scene);
+    on('hunterGrab', () => this.rig.addShake(0.8));
 
     this.ui = new UI();
     this.best = Number(store.load('best', 0)) || 0;
+    this.coins = Number(store.load('coins', 0)) || 0;
     this.ui.setBest(this.best);
+    this.ui.setCoins(this.coins);
 
     initInput(document.getElementById('app'), (a) => this.onAction(a));
     window.addEventListener('resize', () => this.resize());
@@ -72,6 +79,7 @@ class Game {
   reset() {
     this.world.reset();
     this.player.reset();
+    this.hunter.reset();
     this.rig.reset(this.player);
     this.score = 0;
     this.ui.setScore(0);
@@ -119,8 +127,10 @@ class Game {
     if (this.state !== 'playing') return;
     this.state = 'dying';
     this.player.die(type, info);
-    this.rig.addShake(1);
     this.dyingFor = 0;
+    this.deathType = type;
+    if (type === 'hunter') this.hunter.start(this.player);
+    else this.rig.addShake(1);
   }
 
   gameOver() {
@@ -150,6 +160,21 @@ class Game {
     if (hit) {
       if (lane.type === 'rail') this.die('fling', { dir: lane.dir });
       else this.die('squash', { dir: lane.dir });
+      return;
+    }
+    // Lagging too far behind the scrolling camera?
+    if (p.laneRow < this.rig.row - HUNTER_DISTANCE) this.die('hunter');
+  }
+
+  checkCoins() {
+    const p = this.player;
+    const lane = this.world.getLane(p.laneRow);
+    if (!lane || !lane.coins.length) return;
+    const n = lane.collectCoins(p.x);
+    if (n) {
+      this.coins += n;
+      store.save('coins', this.coins);
+      this.ui.setCoins(this.coins, true);
     }
   }
 
@@ -158,14 +183,20 @@ class Game {
     this.world.update(dt, this.player.row, this.rig.row);
     this.player.update(dt);
 
+    this.hunter.update(dt);
+
+    let scroll = 0;
     if (this.state === 'playing') {
+      this.checkCoins();
       this.checkHazards();
+      // the camera creeps forward on its own, faster the further you get
+      scroll = (0.3 + difficulty(this.score) * 0.6) * dt;
     } else if (this.state === 'dying') {
       this.dyingFor += dt;
-      if (this.dyingFor > 0.9) this.gameOver();
+      if (this.dyingFor > (this.deathType === 'hunter' ? 1.8 : 1.0)) this.gameOver();
     }
 
-    this.rig.update(dt, this.player);
+    this.rig.update(dt, this.player, scroll);
     this.sun.position.copy(this.rig.focus).add(LIGHT_OFFSET);
     this.sun.target.position.copy(this.rig.focus);
     this.renderer.render(this.scene, this.rig.camera);
