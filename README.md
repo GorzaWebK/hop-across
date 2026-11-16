@@ -3,6 +3,10 @@
 An original, endless "hop across the lanes" arcade game for the browser, built with
 [Three.js](https://threejs.org/) and low-poly voxel graphics.
 
+### ▶ [Play it in your browser](https://gorzawebk.github.io/hop-across/)
+
+Works on desktop (keyboard) and phones (tap / swipe).
+
 ## Run it
 
 ```bash
@@ -64,3 +68,9 @@ src/
 - Particles are a single `InstancedMesh`.
 - If the frame rate stays under ~50 fps the game lowers the pixel ratio, and as a last
   resort turns off shadows.
+
+## Deployment
+
+Every push to `main` builds the game and publishes it to GitHub Pages via
+`.github/workflows/deploy.yml`. One-time setup: in the repository's
+**Settings → Pages**, set **Source** to **GitHub Actions**.
