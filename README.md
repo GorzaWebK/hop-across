@@ -11,7 +11,7 @@
 <img src="https://img.shields.io/badge/Controls-keys%20·%20tap%20·%20swipe-2D9CDB?style=for-the-badge" alt="Controls: keys · tap · swipe">
 <img src="https://img.shields.io/badge/Built%20with-Three.js-000000?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Built with: Three.js">
 
-<sub>▲ A real run, recorded in the browser.</sub>
+<sub>▲ A real run, recorded in the browser and played by a small autopilot script.</sub>
 
 🟩🟩🟩⬛⬛⬛🟩🟦🟦🟦🟩⬛⬛⬛🟩🟩🟩
 
